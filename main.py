@@ -2,15 +2,15 @@
 #J'ai ajouté la db, un seul tableau suffit pour l'instant, après on pourra complexifier si on veut une mémoire des discussions ou des salons
 #Les mots de passe sont 'cryptés' via sha256, on ne peut en théorie pas inverser le process mais utiliser une seule méthode de chiffrement c'est l'exposition à des attaques en utilisant des tables de mot de passe
 #Mais bon, zéro informations personnelles de collectée...
-
+import os
 import flask as fl
 import flask_socketio as fls
 import sqlite3 as sql
 from hashlib import sha256
 
 Server= fl.Flask(__name__)
-Socket= fls.SocketIO(Server)
-Server.debug= True
+Server.config["SECRET_KEY"]="verysecret!"
+Socket= fls.SocketIO(Server,cors_allowed_origins="*",async_mode="eventlet")
 
 ###Route de redirection
 #Ces routes s'expliquent d'elles-même, elles ne servent qu'à retourner des pages
@@ -48,8 +48,8 @@ def Treat():
              "Chemin":"/"
              }
 
-    with sql.connect("Data.db") as conn:
-        cursor= sql.Cursor(conn)
+    with sql.connect("Data.db") as db:
+        cursor= sql.Cursor(db)
         if action=="Log":
             cursor.execute("SELECT * FROM User WHERE username = ?",(Name,))
             fetch= cursor.fetchall()
@@ -91,9 +91,13 @@ def Treat():
 
     return fl.jsonify(Réponse)
 
+
 #Les signaux du serveur
 @Socket.on("message")
 def send(msg):
     Socket.emit("message",msg)
 
-Socket.run(Server)
+
+if __name__=="__main__":
+    port= int(os.environ.get("PORT",5000))
+    Socket.run(Server,host="0.0.0.0",port=port)
