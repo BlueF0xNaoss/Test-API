@@ -26,7 +26,9 @@ def Chat():
 def Sign():
     return fl.render_template("Sign.html")
 
-
+@Server.route("/Debug")
+def Test():
+    return fl.render_template("Test_Request.html")
 
 ###Route de Fonction
 #C'est plus ici que vont les requêtes d'informations, souvent ce sera une requête qui attends d'être traitées et qui agit en conséquence
@@ -88,6 +90,25 @@ def Treat():
     Réponse["Chemin"]=Chemin
 
     return fl.jsonify(Réponse)
+
+@Server.route("/aboutme",methods=["POST"])
+def Info():
+    req=fl.request
+    result= req.json
+    print(result)
+    username=result["username"]
+    with sql.connect("Data.db") as db:
+        cursor=sql.Cursor(db)
+        cursor.execute("SELECT username,bio FROM User WHERE username=(?)",(username,))
+        us=cursor.fetchall()
+    print({
+        "username": us[0][0],
+        "bio": us[0][1]
+    })
+    return fl.jsonify({
+        "username": us[0][0],
+        "bio": us[0][1]
+    })
 
 #Les signaux du serveur
 @Socket.on("message")
