@@ -9,7 +9,7 @@ import sqlite3 as sql
 from hashlib import sha256
 
 Server= fl.Flask(__name__)
-Server.config["SECRET_KEY"]="verysecret!"
+Server.debug=True
 Socket= fls.SocketIO(Server,cors_allowed_origins="*",async_mode="eventlet")
 
 ###Route de redirection
@@ -77,12 +77,10 @@ def Treat():
                 Connection="Permise"
                 Raison="Sans problème"
                 Chemin="/Chat" #Si on veut après ici on peut rediriger vers un vrai welcoming
-
             except sql.IntegrityError:
                     Connection="Refusée"
                     Raison="Pseudo déjà utilisé"
                     Chemin=fl.url_for("Sign")
-
 
 
     Réponse["Connection"]=Connection
@@ -91,7 +89,6 @@ def Treat():
 
     return fl.jsonify(Réponse)
 
-
 #Les signaux du serveur
 @Socket.on("message")
 def send(msg):
@@ -99,5 +96,6 @@ def send(msg):
 
 
 if __name__=="__main__":
+    print('Debug start')
     port= int(os.environ.get("PORT",5000))
     Socket.run(Server,host="0.0.0.0",port=port)
