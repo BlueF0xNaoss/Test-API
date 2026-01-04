@@ -13,7 +13,7 @@ Server.debug=True
 Socket= fls.SocketIO(Server,cors_allowed_origins="*",async_mode="eventlet")
 
 ###Route de redirection
-#Ces routes s'expliquent d'elles-même, elles ne servent qu'à retourner des pages
+#Ces routes s'expliquent d'elles-même, elles ne servent qu'à retourner des pages, le Ping il est là pour maintenir l'instance du serveur en vie...
 @Server.route("/")
 def Auth():
     return fl.render_template("Log.html")
@@ -29,6 +29,10 @@ def Sign():
 @Server.route("/Debug")
 def Test():
     return fl.render_template("Test_Request.html")
+
+@Server.route("/Ping")
+def Ping():
+    return "Pong, Thanks bro to keep me alive"
 
 ###Route de Fonction
 #C'est plus ici que vont les requêtes d'informations, souvent ce sera une requête qui attends d'être traitées et qui agit en conséquence
