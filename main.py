@@ -26,6 +26,16 @@ def Chat():
 def Sign():
     return fl.render_template("Sign.html")
 
+@Server.route("/Profile")
+def Profile():
+    return fl.render_template("Profil.html")
+
+@Server.route("/Profile/Change")
+def Profil():
+    return fl.render_template("Profil_c.html")
+
+##Routes d'utilités
+#Ces routes sont des routes présente seulement lors du développement ou à l'usage des proprios du serveur, à savoir nous... L'un c'est débug qui va exécuter une requête au besoin, l'autre c'est ping qui va accepter les cronjob qui ping le serveur afin d'éviter qu'il ne s'endorme
 @Server.route("/Debug")
 def Test():
     return fl.render_template("Test_Request.html")
@@ -95,25 +105,39 @@ def Treat():
 
     return fl.jsonify(Réponse)
 
-@Server.route("/aboutme",methods=["POST"])
-def Info():
-    req=fl.request
-    result= req.json
-    print(result)
-    username=result["username"]
+@Server.route("/aboutme/fetch",methods=["GET"])
+def GetInfo():
+    username=fl.request.args.get("username")
     with sql.connect("Data.db") as db:
         cursor=sql.Cursor(db)
         cursor.execute("SELECT username,bio FROM User WHERE username=(?)",(username,))
         us=cursor.fetchall()
-    print({
-        "username": us[0][0],
-        "bio": us[0][1]
-    })
     return fl.jsonify({
+        "Connection":"Permise",
+        "Raison":"Sans problème",
         "username": us[0][0],
         "bio": us[0][1]
     })
 
+
+@Server.route("/aboutme/set",methods=["POST"])
+def SetInfo():
+    req=fl.request
+    result= req.form
+    print(result)
+    old_username=result["old_username"]
+    username=result["username"]
+    bio=result["bio"]
+    with sql.connect("Data.db") as db:
+        cursor=sql.Cursor(db)
+        cursor.execute("UPDATE User SET username=(?),bio=(?)  WHERE username=(?)",(username,bio,old_username))
+        us=cursor.fetchall()
+    return fl.jsonify({
+        "Connection":"Permise",
+        "Raison":"Sans problème",
+        "username": username,
+        "bio": bio
+    })
 #Les signaux du serveur
 @Socket.on("message")
 def send(msg):

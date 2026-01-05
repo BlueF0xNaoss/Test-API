@@ -12,7 +12,7 @@ sock.on(
 
 function Envoi(){
     const input= document.getElementById("Box");
-    sock.send(input.value);
+    sock.send(localStorage["username"]+" : "+input.value);
     input.value=''
 };
 
